@@ -20,7 +20,7 @@ addDurations = function(events) {
   return events;
 };
 draw = function(events, art) {
-  var bpm, noteHeight, noteMargin, ticksPerBeat, ticksPerPixel, time, totalNote;
+  var bpm, noteHeight, noteMargin, ticksPerBeat, ticksPerPixel, time, totalNote, track, wrapper;
   console.log("drawing", events);
   ticksPerBeat = 480;
   bpm = 120;
@@ -29,12 +29,19 @@ draw = function(events, art) {
   totalNote = noteMargin + noteHeight;
   ticksPerPixel = 480 / 100;
   time = 0;
-  return events.forEach(function(event) {
+  track = art.set();
+  track.push(wrapper = art.rect());
+  events.forEach(function(event) {
     time += event.deltaTime;
     if (event.subtype === "noteOn") {
-      return art.rect(time / ticksPerPixel, event.noteNumber * totalNote, event.duration / ticksPerPixel, noteHeight);
+      return track.push(art.rect(time / ticksPerPixel, event.noteNumber * totalNote, event.duration / ticksPerPixel, noteHeight));
     }
   });
+  /* wrapper.attr*/;
+  /*   x: track[1].attr("x")*/;
+  /*   y: track[1].attr("y")*/;
+  /*   width: */;
+  return /*   height: maxFor(track,((t) -> t.noteNumber)*/;
 };
 $(function() {
   var art, start, zpd;
@@ -52,6 +59,7 @@ $(function() {
       bytes[index] = scc(data.charCodeAt(index) & 255);
     }
     midi = new MidiFile(bytes.join(""));
+    console.log("midiFile", midi);
     return midi.tracks.forEach(function(track) {
       return draw(addDurations(track), art);
     });

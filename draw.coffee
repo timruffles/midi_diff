@@ -22,10 +22,17 @@ draw = (events,art) ->
   totalNote = noteMargin + noteHeight
   ticksPerPixel = 480 / 100
   time = 0
+  track = art.set()
+  track.push wrapper = art.rect()
   events.forEach (event) ->
     time += event.deltaTime
     if event.subtype == "noteOn"
-      art.rect(time / ticksPerPixel,event.noteNumber * totalNote,event.duration / ticksPerPixel,noteHeight)
+      track.push art.rect(time / ticksPerPixel,event.noteNumber * totalNote,event.duration / ticksPerPixel,noteHeight)
+  /* wrapper.attr*/
+  /*   x: track[1].attr("x")*/
+  /*   y: track[1].attr("y")*/
+  /*   width: */
+  /*   height: maxFor(track,((t) -> t.noteNumber)*/
 
 
 $ ->
@@ -39,6 +46,7 @@ $ ->
       bytes[index] = scc(data.charCodeAt(index) & 255)
 
     midi = new MidiFile(bytes.join(""))
+    console.log "midiFile", midi
     midi.tracks.forEach (track) ->
       draw addDurations(track), art
 
