@@ -1,0 +1,47 @@
+<seqview xscroll="0.000000" yscroll="0" zoom="100">
+<sequence maintempo="120" measureAmount="12" currentTrack="0" beatResolution="960" internalName="" fileFormatVersion="3.000000" channelManagement="auto" metronome="false">
+
+<measure  firstMeasure="0" denom="4" num="4"/>
+
+<tempo>
+</tempo>
+<text>
+</text>
+<copyright></copyright>
+
+<track name="Untitled" channel="0">
+  <key type="C" />
+  <editor score="false" keyboard="true" guitar="false" drum="false" controller="false" height="605" g_clef="true" f_clef="true"/>
+  <magneticgrid divider="8" triplet="false"/>
+  <instrument id="0"/>
+  <drumkit id="0"/>
+  <controller id="7"/>
+  <guitartuning  string0="67" string1="72" string2="76" string3="81" string4="86" string5="91"/>
+
+  <note pitch="74" start="5746" end="6072" volume="100" selected="true"/>
+  <note pitch="71" start="5765" end="6034" volume="100" selected="true"/>
+  <note pitch="74" start="6380" end="6574" volume="100" selected="true"/>
+  <note pitch="71" start="6380" end="6593" volume="100" selected="true"/>
+  <note pitch="71" start="6904" end="7178" volume="100" selected="true"/>
+  <note pitch="74" start="6923" end="7159" volume="100" selected="true"/>
+  <note pitch="69" start="7989" end="8200" volume="100" selected="true"/>
+  <note pitch="76" start="7989" end="8200" volume="100" selected="true"/>
+  <note pitch="69" start="8415" end="8572" volume="100" selected="true"/>
+  <note pitch="76" start="8476" end="8553" volume="100" selected="true"/>
+  <note pitch="69" start="8822" end="9073" volume="100" selected="true"/>
+  <note pitch="76" start="8860" end="9093" volume="100" selected="true"/>
+  <note pitch="71" start="9826" end="10039" volume="100" selected="true"/>
+  <note pitch="74" start="9864" end="10020" volume="100" selected="true"/>
+  <note pitch="71" start="10231" end="10366" volume="100" selected="true"/>
+  <note pitch="74" start="10250" end="10366" volume="100" selected="true"/>
+  <note pitch="71" start="10675" end="10930" volume="100" selected="true"/>
+  <note pitch="74" start="10713" end="10888" volume="100" selected="true"/>
+  <note pitch="76" start="11702" end="11913" volume="100" selected="true"/>
+  <note pitch="69" start="11702" end="11932" volume="100" selected="true"/>
+  <note pitch="69" start="12144" end="12301" volume="100" selected="true"/>
+  <note pitch="76" start="12167" end="12301" volume="100" selected="true"/>
+  <note pitch="69" start="12610" end="12925" volume="100" selected="true"/>
+  <note pitch="76" start="12654" end="12944" volume="100" selected="true"/>
+</track>
+
+</sequence></seqview>
