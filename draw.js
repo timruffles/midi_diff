@@ -1,4 +1,4 @@
-var addDurations, draw, getColor, getMidi, musicalParamters;
+var addDurations, draw, getColor, getMidi, musicalParamters, noteNames;
 addDurations = function(events) {
   var noteStatus;
   noteStatus = {};
@@ -44,8 +44,12 @@ musicalParamters = function(midi) {
   });
   return params;
 };
-draw = function(midi, art) {
-  var bar, beat, beatNote, beatNotes, height, maxTime, noteHeight, noteMargin, params, qNotes, ticksPerBeatNote, ticksPerPixel, ticksPerQNote, totalNote, x, _ref;
+noteNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+draw = function(midi) {
+  var bar, beat, beatNote, beatNotes, height, maxTime, noteArt, noteHeight, noteMargin, noteNumber, params, qNotes, text, ticksPerBeatNote, ticksPerPixel, ticksPerQNote, timeArt, tone, toneArt, totalNote, x, _ref;
+  timeArt = Raphael(20, 10, 800, 30);
+  noteArt = Raphael(20, 40, 800, 800);
+  toneArt = Raphael(0, 40, 20, 800);
   console.log("drawing", midi);
   params = musicalParamters(midi);
   ticksPerQNote = params.ticksPerBeat || 480;
@@ -63,7 +67,7 @@ draw = function(midi, art) {
       var note;
       time += event.deltaTime;
       if (event.subtype === "noteOn") {
-        note = art.rect(time / ticksPerPixel, event.noteNumber * totalNote, event.duration / ticksPerPixel, noteHeight);
+        note = noteArt.rect(time / ticksPerPixel, event.noteNumber * totalNote, event.duration / ticksPerPixel, noteHeight);
         return note.attr({
           fill: getColor(event)
         });
@@ -73,6 +77,16 @@ draw = function(midi, art) {
       return maxTime = time;
     }
   });
+  for (noteNumber = 0; noteNumber <= 127; noteNumber++) {
+    tone = toneArt.rect(0, noteNumber * totalNote, 20, noteHeight);
+    tone.attr({
+      fill: "green"
+    });
+    text = toneArt.text(3, noteNumber * totalNote + 5, noteNames[noteNumber % 12]);
+    text.attr({
+      stroke: "#fff"
+    });
+  }
   qNotes = maxTime / ticksPerQNote;
   beatNotes = Math.ceil(qNotes / 4 / (1 / beatNote));
   ticksPerBeatNote = (1 / beatNote) * 4 * ticksPerQNote;
@@ -80,10 +94,10 @@ draw = function(midi, art) {
     x = beat * ticksPerQNote / ticksPerPixel;
     height = 10;
     if (beat % bar === 0) {
-      art.text(x + 5, 10, beat / bar + 1);
+      timeArt.text(x + 5, 10, beat / bar + 1);
       height = 20;
     }
-    art.path("M" + x + ",30 L" + x + "," + (30 - height));
+    timeArt.path("M" + x + ",30 L" + x + "," + (30 - height));
   }
   return null;
 };
@@ -94,13 +108,7 @@ getMidi = function(file) {
   });
 };
 $(function() {
-  var art, loadDiff, toMidiFile, zpd;
-  art = Raphael(10, 10, 800, 800);
-  zpd = new RaphaelZPD(art, {
-    zoom: true,
-    pan: true,
-    drag: true
-  });
+  var loadDiff, toMidiFile;
   toMidiFile = function(data) {
     var bytes, index, midi, scc, _ref;
     bytes = [];
@@ -128,6 +136,6 @@ $(function() {
     var midiA, midiB;
     midiA = _arg[0], midiB = _arg[1];
     diff(midiA, midiB);
-    return draw(midiA, art);
+    return draw(midiA);
   });
 });

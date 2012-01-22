@@ -29,7 +29,13 @@ musicalParamters = (midi) ->
         params.tempo = event.microsecondsPerBeat
   params
 
-draw = (midi,art) ->
+noteNames = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"]
+
+draw = (midi) ->
+
+  timeArt = Raphael(20,10,800,30)
+  noteArt = Raphael(20,40,800,800)
+  toneArt = Raphael(0,40,20,800)
 
   console.log "drawing", midi
 
@@ -52,10 +58,17 @@ draw = (midi,art) ->
     track.forEach (event) ->
       time += event.deltaTime
       if event.subtype == "noteOn"
-        note = art.rect(time / ticksPerPixel,event.noteNumber * totalNote,event.duration / ticksPerPixel,noteHeight)
+        note = noteArt.rect(time / ticksPerPixel,event.noteNumber * totalNote,event.duration / ticksPerPixel,noteHeight)
         note.attr fill: getColor event
     if time > maxTime
       maxTime = time
+
+  for noteNumber in [0..127]
+    tone = toneArt.rect(0,noteNumber * totalNote,20,noteHeight)
+    tone.attr fill: "green"
+    text = toneArt.text(3,noteNumber * totalNote + 5,noteNames[noteNumber % 12])
+    text.attr stroke: "#fff"
+
 
   # default 4/4
   qNotes = maxTime / ticksPerQNote
@@ -65,9 +78,9 @@ draw = (midi,art) ->
     x = beat * ticksPerQNote / ticksPerPixel
     height = 10
     if beat % bar == 0
-      art.text x + 5, 10, beat / bar + 1
+      timeArt.text x + 5, 10, beat / bar + 1
       height = 20
-    art.path "M#{x},30 L#{x},#{30 - height}"
+    timeArt.path "M#{x},30 L#{x},#{30 - height}"
   null
 
 getMidi = (file) ->
@@ -77,8 +90,7 @@ getMidi = (file) ->
 
 
 $ ->
-  art = Raphael(10,10,800,800)
-  zpd = new RaphaelZPD(art,zoom: true, pan: true, drag: true)
+
 
   toMidiFile = (data) ->
     bytes = []
@@ -103,4 +115,4 @@ $ ->
 
     diff midiA, midiB
 
-    draw midiA, art
+    draw midiA
