@@ -10,22 +10,92 @@
     body {
 
     }
-    svg {
-      font: 0.5em Helvetica;
+    #music-view {
+      overflow: hidden;
+      height: 700px;
+    }
+    #revisions {
+    }
+    #revisions li {
+      list-style-type: none;
+      display: block;
+      padding: 1em;
+      border: 1px solid #eee;
+      border-bottom: none;
+      margin: 0;
+    }
+    #revisions li:last-child {
+      border-bottom: 1px solid #eee;
+    }
+    #revisions li:hover {
+      background: #DBFCFF;
+    }
+    #nav {
+      box-shadow: 4px 0px rgba(0,0,0,0.2);
+      padding: 1em 1em 0 1em;
+      border-bottom: 2px solid #2A85E8;
+      margin-bottom: 1em;
+    }
+    #nav h1 {
+      font-size: 1em;
+    }
+    #tones text {
+    }
+    #tones-wrap, #music-wrap, #beats-wrap {
+      position: absolute;
+      left: 0;
+      width: 700px;
+      height: 600px;
+    }
+    #music-wrap {
+      top: 0px;
+    }
+    #tones-wrap {
+      top: 30px;
+    }
+    #music-view {
+      position: relative;
     }
   </style>
+  <link rel="stylesheet" href="foundation.css" type="text/css" media="screen" charset="utf-8">
 <body>
-  <div id="top">
+  <div id="nav" class="container">
+    <h1>Midi Diff</h1>
   </div>
-  <div id="music">
-    <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="1700" height="1600">
-      <g id="music" >
-        <g id="beats" transform="translate(20,0)"></g>
-        <g id="notes" transform="translate(20,30)" ></g>
-      </g>
-      <g id="tones" transform="translate(0,30)" ></g>
-    </svg>
-  </div>
-  <div id="side">
+  <div id="content" class="container">
+    <div id="sub-title" class="row">
+      <h2>
+        <a href="">De Rerum Natura</a>
+        <a href="/users/tim-ruffles">Tim Ruffles</a>
+      </h2>
+    </div>
+    <div id="main" class="row">
+      <div id="music-view" class="eight columns">
+        <div id="tones-wrap">
+          <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="1700" height="1600">
+            <g id="tones"></g>
+          </svg>
+        </div>
+        <div id="music-wrap">
+          <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="1700" height="1600" id="music">
+            <g id="notes" ></g>
+          </g>
+        </div>
+        <div id="beats-wrap">
+          <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="1700" height="1600" id="music">
+            <g id="beats" transform="translate(30)" ></g>
+          </svg>
+        </div>
+      </div>
+      <div id="side" class="four columns">
+        <h3>Revisions</h3>
+        <ul id="revisions">
+          <li href=""><a href="">Revision 1, 2 days ago</a></li>
+          <li href=""><a href="">Revision 1, 2 days ago</a></li>
+          <li href=""><a href="">Revision 1, 2 days ago</a></li>
+          <li href=""><a href="">Revision 1, 2 days ago</a></li>
+        </ul>
+      </div>
+    </div>
   </div>
 </body>

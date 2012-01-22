@@ -33,18 +33,6 @@ musicalParamters = (midi) ->
         params.tempo = event.microsecondsPerBeat
   params
 
-addGroup = (paper) ->
-  root = paper.canvas
-  group = document.createElementNS('http://www.w3.org/2000/svg', 'g')
-  root.appendChild group
-  paper.zoomPanGroup = group
-  ['circle', 'rect', 'ellipse', 'image', 'text', 'path'].forEach (method) ->
-    original = paper[method]
-    paper[method] = ->
-      el = original.apply(paper,arguments)
-      group.appendChild el.node
-      el
-
 noteNames = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"]
 
 byId = (id) -> document.getElementById id
@@ -54,6 +42,8 @@ draw = (midi) ->
   noteSVG = byId "notes"
   toneSVG = byId "tones"
   beatSVG = byId "beats"
+
+  noteWrap = byId "music-wrap"
 
   noteArt = d3.select "#notes"
   toneArt = d3.select "#tones"
@@ -66,18 +56,19 @@ draw = (midi) ->
   ticksPerQNote = params.ticksPerBeat || 480
   [beatNote,bar] = params.timeSignature || [4,4]
 
-  noteHeight = 10
+  noteHeight = 16
   noteMargin = 5
   totalNote = noteMargin + noteHeight
   ticksPerPixel = 48
 
   octaveWeights = []
-  scrollToOctave = (octaveWeights,paper) ->
+  scrollToOctave = ->
     maxAt = -Infinity
     max = -Infinity
     octaveWeights.forEach (w,index) -> max = index if w > maxAt
     dy = - 12 * noteHeight * max # set dY
-    /* paper.zoomPanGroup.setAttribute("transform","matrix(1,0,0,1,0,#{dy})")*/
+    noteArt.attr("transform","translate(0,#{dy})")
+    toneArt.attr("transform","translate(0,#{dy})")
 
   maxTime = 0
   midi.tracks.forEach (track) ->
@@ -100,8 +91,7 @@ draw = (midi) ->
     if time > maxTime
       maxTime = time
 
-  scrollToOctave octaveWeights, noteArt
-  scrollToOctave octaveWeights, toneArt
+  scrollToOctave()
 
   for noteNumber in [0..127]
     tone = toneArt.append("rect").attrAll
@@ -109,11 +99,11 @@ draw = (midi) ->
       y:noteNumber * totalNote
       width: 20
       height: noteHeight
-      fill: "green"
+      fill: "#2A85E8"
     text = toneArt.append("text").attrAll
-      x:3
-      y:noteNumber * totalNote + 5
-      stroke: "#fff"
+      x: 3
+      y:noteNumber * totalNote + 12
+      fill: "#fff"
     text.text noteNames[noteNumber % 12]
 
 

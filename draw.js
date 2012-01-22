@@ -1,4 +1,4 @@
-var addDurations, addGroup, byId, draw, getColor, getMidi, musicalParamters, noteNames;
+var addDurations, byId, draw, getColor, getMidi, musicalParamters, noteNames;
 var __hasProp = Object.prototype.hasOwnProperty;
 addDurations = function(events) {
   var noteStatus;
@@ -54,32 +54,16 @@ musicalParamters = function(midi) {
   });
   return params;
 };
-addGroup = function(paper) {
-  var group, root;
-  root = paper.canvas;
-  group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-  root.appendChild(group);
-  paper.zoomPanGroup = group;
-  return ['circle', 'rect', 'ellipse', 'image', 'text', 'path'].forEach(function(method) {
-    var original;
-    original = paper[method];
-    return paper[method] = function() {
-      var el;
-      el = original.apply(paper, arguments);
-      group.appendChild(el.node);
-      return el;
-    };
-  });
-};
 noteNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 byId = function(id) {
   return document.getElementById(id);
 };
 draw = function(midi) {
-  var bar, beat, beatArt, beatNote, beatNotes, beatSVG, height, maxTime, noteArt, noteHeight, noteMargin, noteNumber, noteSVG, octaveWeights, params, qNotes, scrollToOctave, text, ticksPerBeatNote, ticksPerPixel, ticksPerQNote, tone, toneArt, toneSVG, totalNote, x, _ref;
+  var bar, beat, beatArt, beatNote, beatNotes, beatSVG, height, maxTime, noteArt, noteHeight, noteMargin, noteNumber, noteSVG, noteWrap, octaveWeights, params, qNotes, scrollToOctave, text, ticksPerBeatNote, ticksPerPixel, ticksPerQNote, tone, toneArt, toneSVG, totalNote, x, _ref;
   noteSVG = byId("notes");
   toneSVG = byId("tones");
   beatSVG = byId("beats");
+  noteWrap = byId("music-wrap");
   noteArt = d3.select("#notes");
   toneArt = d3.select("#tones");
   beatArt = d3.select("#beats");
@@ -87,12 +71,12 @@ draw = function(midi) {
   params = musicalParamters(midi);
   ticksPerQNote = params.ticksPerBeat || 480;
   _ref = params.timeSignature || [4, 4], beatNote = _ref[0], bar = _ref[1];
-  noteHeight = 10;
+  noteHeight = 16;
   noteMargin = 5;
   totalNote = noteMargin + noteHeight;
   ticksPerPixel = 48;
   octaveWeights = [];
-  scrollToOctave = function(octaveWeights, paper) {
+  scrollToOctave = function() {
     var dy, max, maxAt;
     maxAt = -Infinity;
     max = -Infinity;
@@ -102,7 +86,8 @@ draw = function(midi) {
       }
     });
     dy = -12 * noteHeight * max;
-    return /* paper.zoomPanGroup.setAttribute("transform","matrix(1,0,0,1,0,#{dy})")*/;
+    noteArt.attr("transform", "translate(0," + dy + ")");
+    return toneArt.attr("transform", "translate(0," + dy + ")");
   };
   maxTime = 0;
   midi.tracks.forEach(function(track) {
@@ -129,20 +114,19 @@ draw = function(midi) {
       return maxTime = time;
     }
   });
-  scrollToOctave(octaveWeights, noteArt);
-  scrollToOctave(octaveWeights, toneArt);
+  scrollToOctave();
   for (noteNumber = 0; noteNumber <= 127; noteNumber++) {
     tone = toneArt.append("rect").attrAll({
       x: 0,
       y: noteNumber * totalNote,
       width: 20,
       height: noteHeight,
-      fill: "green"
+      fill: "#2A85E8"
     });
     text = toneArt.append("text").attrAll({
       x: 3,
-      y: noteNumber * totalNote + 5,
-      stroke: "#fff"
+      y: noteNumber * totalNote + 12,
+      fill: "#fff"
     });
     text.text(noteNames[noteNumber % 12]);
   }
