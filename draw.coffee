@@ -14,7 +14,7 @@ getColor = (note) ->
   if note.deleted
     "red"
   else
-    "blue"
+    "#5EEB96"
 
 d3.selection.prototype.attrAll = (attrs) ->
   for own k, v of attrs
@@ -45,6 +45,7 @@ draw = (midi) ->
 
   noteWrap = byId "music-wrap"
 
+
   noteArt = d3.select "#notes"
   toneArt = d3.select "#tones"
   beatArt = d3.select "#beats"
@@ -59,7 +60,7 @@ draw = (midi) ->
   noteHeight = 16
   noteMargin = 5
   totalNote = noteMargin + noteHeight
-  ticksPerPixel = 48
+  ticksPerPixel = 24
 
   octaveWeights = []
   scrollToOctave = ->
@@ -92,6 +93,7 @@ draw = (midi) ->
       maxTime = time
 
   scrollToOctave()
+  new PanZoomSVG byId("music-view"), noteSVG,beatSVG,toneSVG
 
   for noteNumber in [0..127]
     tone = toneArt.append("rect").attrAll
@@ -114,18 +116,21 @@ draw = (midi) ->
   for beat in [0..beatNotes]
     x = beat * ticksPerQNote / ticksPerPixel
     height = 10
+    stroke = "#ddd"
     if beat % bar == 0
+      height = 20
+      stroke = "#aaa"
       text = beatArt.append("text").attrAll
         x: x + 5
         y: 10
+        stroke: stroke
       text.text beat / bar
-      height = 20
     beatArt.append("line").attrAll
       x1: x
       y1: 30
       x2: x
       y2: 30 - height
-      stroke: "#000"
+      stroke: stroke
   null
 
 getMidi = (file) ->

@@ -24,7 +24,7 @@ getColor = function(note) {
   if (note.deleted) {
     return "red";
   } else {
-    return "blue";
+    return "#5EEB96";
   }
 };
 d3.selection.prototype.attrAll = function(attrs) {
@@ -59,7 +59,7 @@ byId = function(id) {
   return document.getElementById(id);
 };
 draw = function(midi) {
-  var bar, beat, beatArt, beatNote, beatNotes, beatSVG, height, maxTime, noteArt, noteHeight, noteMargin, noteNumber, noteSVG, noteWrap, octaveWeights, params, qNotes, scrollToOctave, text, ticksPerBeatNote, ticksPerPixel, ticksPerQNote, tone, toneArt, toneSVG, totalNote, x, _ref;
+  var bar, beat, beatArt, beatNote, beatNotes, beatSVG, height, maxTime, noteArt, noteHeight, noteMargin, noteNumber, noteSVG, noteWrap, octaveWeights, params, qNotes, scrollToOctave, stroke, text, ticksPerBeatNote, ticksPerPixel, ticksPerQNote, tone, toneArt, toneSVG, totalNote, x, _ref;
   noteSVG = byId("notes");
   toneSVG = byId("tones");
   beatSVG = byId("beats");
@@ -74,7 +74,7 @@ draw = function(midi) {
   noteHeight = 16;
   noteMargin = 5;
   totalNote = noteMargin + noteHeight;
-  ticksPerPixel = 48;
+  ticksPerPixel = 24;
   octaveWeights = [];
   scrollToOctave = function() {
     var dy, max, maxAt;
@@ -115,6 +115,7 @@ draw = function(midi) {
     }
   });
   scrollToOctave();
+  new PanZoomSVG(byId("music-view"), noteSVG, beatSVG, toneSVG);
   for (noteNumber = 0; noteNumber <= 127; noteNumber++) {
     tone = toneArt.append("rect").attrAll({
       x: 0,
@@ -136,20 +137,23 @@ draw = function(midi) {
   for (beat = 0; 0 <= beatNotes ? beat <= beatNotes : beat >= beatNotes; 0 <= beatNotes ? beat++ : beat--) {
     x = beat * ticksPerQNote / ticksPerPixel;
     height = 10;
+    stroke = "#ddd";
     if (beat % bar === 0) {
+      height = 20;
+      stroke = "#aaa";
       text = beatArt.append("text").attrAll({
         x: x + 5,
-        y: 10
+        y: 10,
+        stroke: stroke
       });
       text.text(beat / bar);
-      height = 20;
     }
     beatArt.append("line").attrAll({
       x1: x,
       y1: 30,
       x2: x,
       y2: 30 - height,
-      stroke: "#000"
+      stroke: stroke
     });
   }
   return null;
