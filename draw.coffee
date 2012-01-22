@@ -17,6 +17,29 @@ getColor = (note) ->
     "blue"
 
 
+SVGElement::attr = (attrs,set) ->
+  if typeof attrs == "string"
+    if set
+      @setAttribute attrs, set
+    else
+      @getAttribute attrs
+  else
+    for own key, val of attrs
+      @attr key, val
+
+createEl = (el) ->
+  el = document.createElementNS('http://www.w3.org/2000/svg', el)
+
+svg =
+  rect: (x,y,w,h) =>
+    el = createEl "rect"
+    el.attr width: w, height: h, x: x, y: y
+    el
+  text: (x,y,text) ->
+    el = createEl "rect"
+    el.attr text: text, x: x, y: y
+    el
+
 musicalParamters = (midi) ->
   params = {}
   midi.tracks.forEach (track) ->
@@ -49,6 +72,14 @@ draw = (midi) ->
   totalNote = noteMargin + noteHeight
   ticksPerPixel = 48
 
+  octaveWeights = []
+  scrollToOctave = (octaveWeights,svg) ->
+    maxAt = -Infinity
+    max = -Infinity
+    octaveWeights.forEach (w,index) -> max = index if w > maxAt
+    dy = - 12 * noteHeight * max # set dY
+    svg.canvas.setAttribute("transform","matrix(0,0,0,0,0,#{dy})")
+
   maxTime = 0
   midi.tracks.forEach (track) ->
     time = 0
@@ -60,8 +91,13 @@ draw = (midi) ->
       if event.subtype == "noteOn"
         note = noteArt.rect(time / ticksPerPixel,event.noteNumber * totalNote,event.duration / ticksPerPixel,noteHeight)
         note.attr fill: getColor event
+        octave = Math.floor event.noteNumber / 12
+        octaveWeights[octave] ||= 0
+        octaveWeights[octave] += 1
     if time > maxTime
       maxTime = time
+
+  scrollToOctave octaveWeights, noteArt
 
   for noteNumber in [0..127]
     tone = toneArt.rect(0,noteNumber * totalNote,20,noteHeight)

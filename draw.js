@@ -1,4 +1,5 @@
-var addDurations, draw, getColor, getMidi, musicalParamters, noteNames;
+var addDurations, createEl, draw, getColor, getMidi, musicalParamters, noteNames, svg;
+var __hasProp = Object.prototype.hasOwnProperty, __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 addDurations = function(events) {
   var noteStatus;
   noteStatus = {};
@@ -26,6 +27,50 @@ getColor = function(note) {
     return "blue";
   }
 };
+SVGElement.prototype.attr = function(attrs, set) {
+  var key, val, _results;
+  if (typeof attrs === "string") {
+    if (set) {
+      return this.setAttribute(attrs, set);
+    } else {
+      return this.getAttribute(attrs);
+    }
+  } else {
+    _results = [];
+    for (key in attrs) {
+      if (!__hasProp.call(attrs, key)) continue;
+      val = attrs[key];
+      _results.push(this.attr(key, val));
+    }
+    return _results;
+  }
+};
+createEl = function(el) {
+  return el = document.createElementNS('http://www.w3.org/2000/svg', el);
+};
+svg = {
+  rect: __bind(function(x, y, w, h) {
+    var el;
+    el = createEl("rect");
+    el.attr({
+      width: w,
+      height: h,
+      x: x,
+      y: y
+    });
+    return el;
+  }, this),
+  text: function(x, y, text) {
+    var el;
+    el = createEl("rect");
+    el.attr({
+      text: text,
+      x: x,
+      y: y
+    });
+    return el;
+  }
+};
 musicalParamters = function(midi) {
   var params;
   params = {};
@@ -46,7 +91,7 @@ musicalParamters = function(midi) {
 };
 noteNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 draw = function(midi) {
-  var bar, beat, beatNote, beatNotes, height, maxTime, noteArt, noteHeight, noteMargin, noteNumber, params, qNotes, text, ticksPerBeatNote, ticksPerPixel, ticksPerQNote, timeArt, tone, toneArt, totalNote, x, _ref;
+  var bar, beat, beatNote, beatNotes, height, maxTime, noteArt, noteHeight, noteMargin, noteNumber, octaveWeights, params, qNotes, scrollToOctave, text, ticksPerBeatNote, ticksPerPixel, ticksPerQNote, timeArt, tone, toneArt, totalNote, x, _ref;
   timeArt = Raphael(20, 10, 800, 30);
   noteArt = Raphael(20, 40, 800, 800);
   toneArt = Raphael(0, 40, 20, 800);
@@ -58,25 +103,42 @@ draw = function(midi) {
   noteMargin = 5;
   totalNote = noteMargin + noteHeight;
   ticksPerPixel = 48;
+  octaveWeights = [];
+  scrollToOctave = function(octaveWeights, svg) {
+    var dy, max, maxAt;
+    maxAt = -Infinity;
+    max = -Infinity;
+    octaveWeights.forEach(function(w, index) {
+      if (w > maxAt) {
+        return max = index;
+      }
+    });
+    dy = -12 * noteHeight * max;
+    return svg.canvas.setAttribute("transform", "matrix(0,0,0,0,0," + dy + ")");
+  };
   maxTime = 0;
   midi.tracks.forEach(function(track) {
     var time;
     time = 0;
     addDurations(track);
     track.forEach(function(event) {
-      var note;
+      var note, octave;
       time += event.deltaTime;
       if (event.subtype === "noteOn") {
         note = noteArt.rect(time / ticksPerPixel, event.noteNumber * totalNote, event.duration / ticksPerPixel, noteHeight);
-        return note.attr({
+        note.attr({
           fill: getColor(event)
         });
+        octave = Math.floor(event.noteNumber / 12);
+        octaveWeights[octave] || (octaveWeights[octave] = 0);
+        return octaveWeights[octave] += 1;
       }
     });
     if (time > maxTime) {
       return maxTime = time;
     }
   });
+  scrollToOctave(octaveWeights, noteArt);
   for (noteNumber = 0; noteNumber <= 127; noteNumber++) {
     tone = toneArt.rect(0, noteNumber * totalNote, 20, noteHeight);
     tone.attr({
