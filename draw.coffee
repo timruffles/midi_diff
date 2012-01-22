@@ -16,6 +16,10 @@ getColor = (note) ->
   else
     "blue"
 
+d3.selection.prototype.attrAll = (attrs) ->
+  for own k, v of attrs
+    @attr k, v
+  this
 
 musicalParamters = (midi) ->
   params = {}
@@ -43,13 +47,17 @@ addGroup = (paper) ->
 
 noteNames = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"]
 
+byId = (id) -> document.getElementById id
+
 draw = (midi) ->
 
-  timeArt = Raphael(20,10,800,30)
-  noteArt = Raphael(20,40,800,800)
-  addGroup noteArt
-  toneArt = Raphael(0,40,20,800)
-  addGroup toneArt
+  noteSVG = byId "notes"
+  toneSVG = byId "tones"
+  beatSVG = byId "beats"
+
+  noteArt = d3.select "#notes"
+  toneArt = d3.select "#tones"
+  beatArt = d3.select "#beats"
 
   console.log "drawing", midi
 
@@ -69,7 +77,7 @@ draw = (midi) ->
     max = -Infinity
     octaveWeights.forEach (w,index) -> max = index if w > maxAt
     dy = - 12 * noteHeight * max # set dY
-    paper.zoomPanGroup.setAttribute("transform","matrix(1,0,0,1,0,#{dy})")
+    /* paper.zoomPanGroup.setAttribute("transform","matrix(1,0,0,1,0,#{dy})")*/
 
   maxTime = 0
   midi.tracks.forEach (track) ->
@@ -80,8 +88,12 @@ draw = (midi) ->
     track.forEach (event) ->
       time += event.deltaTime
       if event.subtype == "noteOn"
-        note = noteArt.rect(time / ticksPerPixel,event.noteNumber * totalNote,event.duration / ticksPerPixel,noteHeight)
-        note.attr fill: getColor event
+        note = noteArt.append("rect").attrAll
+          x: time / ticksPerPixel
+          y: event.noteNumber * totalNote
+          width: event.duration / ticksPerPixel
+          height: noteHeight
+          fill: getColor event
         octave = Math.floor event.noteNumber / 12
         octaveWeights[octave] ||= 0
         octaveWeights[octave] += 1
@@ -92,10 +104,17 @@ draw = (midi) ->
   scrollToOctave octaveWeights, toneArt
 
   for noteNumber in [0..127]
-    tone = toneArt.rect(0,noteNumber * totalNote,20,noteHeight)
-    tone.attr fill: "green"
-    text = toneArt.text(3,noteNumber * totalNote + 5,noteNames[noteNumber % 12])
-    text.attr stroke: "#fff"
+    tone = toneArt.append("rect").attrAll
+      x:0
+      y:noteNumber * totalNote
+      width: 20
+      height: noteHeight
+      fill: "green"
+    text = toneArt.append("text").attrAll
+      x:3
+      y:noteNumber * totalNote + 5
+      stroke: "#fff"
+    text.text noteNames[noteNumber % 12]
 
 
   # default 4/4
@@ -106,9 +125,17 @@ draw = (midi) ->
     x = beat * ticksPerQNote / ticksPerPixel
     height = 10
     if beat % bar == 0
-      timeArt.text x + 5, 10, beat / bar + 1
+      text = beatArt.append("text").attrAll
+        x: x + 5
+        y: 10
+      text.text beat / bar
       height = 20
-    timeArt.path "M#{x},30 L#{x},#{30 - height}"
+    beatArt.append("line").attrAll
+      x1: x
+      y1: 30
+      x2: x
+      y2: 30 - height
+      stroke: "#000"
   null
 
 getMidi = (file) ->

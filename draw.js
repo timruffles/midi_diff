@@ -1,4 +1,5 @@
-var addDurations, addGroup, draw, getColor, getMidi, musicalParamters, noteNames;
+var addDurations, addGroup, byId, draw, getColor, getMidi, musicalParamters, noteNames;
+var __hasProp = Object.prototype.hasOwnProperty;
 addDurations = function(events) {
   var noteStatus;
   noteStatus = {};
@@ -25,6 +26,15 @@ getColor = function(note) {
   } else {
     return "blue";
   }
+};
+d3.selection.prototype.attrAll = function(attrs) {
+  var k, v;
+  for (k in attrs) {
+    if (!__hasProp.call(attrs, k)) continue;
+    v = attrs[k];
+    this.attr(k, v);
+  }
+  return this;
 };
 musicalParamters = function(midi) {
   var params;
@@ -62,13 +72,17 @@ addGroup = function(paper) {
   });
 };
 noteNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+byId = function(id) {
+  return document.getElementById(id);
+};
 draw = function(midi) {
-  var bar, beat, beatNote, beatNotes, height, maxTime, noteArt, noteHeight, noteMargin, noteNumber, octaveWeights, params, qNotes, scrollToOctave, text, ticksPerBeatNote, ticksPerPixel, ticksPerQNote, timeArt, tone, toneArt, totalNote, x, _ref;
-  timeArt = Raphael(20, 10, 800, 30);
-  noteArt = Raphael(20, 40, 800, 800);
-  addGroup(noteArt);
-  toneArt = Raphael(0, 40, 20, 800);
-  addGroup(toneArt);
+  var bar, beat, beatArt, beatNote, beatNotes, beatSVG, height, maxTime, noteArt, noteHeight, noteMargin, noteNumber, noteSVG, octaveWeights, params, qNotes, scrollToOctave, text, ticksPerBeatNote, ticksPerPixel, ticksPerQNote, tone, toneArt, toneSVG, totalNote, x, _ref;
+  noteSVG = byId("notes");
+  toneSVG = byId("tones");
+  beatSVG = byId("beats");
+  noteArt = d3.select("#notes");
+  toneArt = d3.select("#tones");
+  beatArt = d3.select("#beats");
   console.log("drawing", midi);
   params = musicalParamters(midi);
   ticksPerQNote = params.ticksPerBeat || 480;
@@ -88,7 +102,7 @@ draw = function(midi) {
       }
     });
     dy = -12 * noteHeight * max;
-    return paper.zoomPanGroup.setAttribute("transform", "matrix(1,0,0,1,0," + dy + ")");
+    return /* paper.zoomPanGroup.setAttribute("transform","matrix(1,0,0,1,0,#{dy})")*/;
   };
   maxTime = 0;
   midi.tracks.forEach(function(track) {
@@ -99,8 +113,11 @@ draw = function(midi) {
       var note, octave;
       time += event.deltaTime;
       if (event.subtype === "noteOn") {
-        note = noteArt.rect(time / ticksPerPixel, event.noteNumber * totalNote, event.duration / ticksPerPixel, noteHeight);
-        note.attr({
+        note = noteArt.append("rect").attrAll({
+          x: time / ticksPerPixel,
+          y: event.noteNumber * totalNote,
+          width: event.duration / ticksPerPixel,
+          height: noteHeight,
           fill: getColor(event)
         });
         octave = Math.floor(event.noteNumber / 12);
@@ -115,14 +132,19 @@ draw = function(midi) {
   scrollToOctave(octaveWeights, noteArt);
   scrollToOctave(octaveWeights, toneArt);
   for (noteNumber = 0; noteNumber <= 127; noteNumber++) {
-    tone = toneArt.rect(0, noteNumber * totalNote, 20, noteHeight);
-    tone.attr({
+    tone = toneArt.append("rect").attrAll({
+      x: 0,
+      y: noteNumber * totalNote,
+      width: 20,
+      height: noteHeight,
       fill: "green"
     });
-    text = toneArt.text(3, noteNumber * totalNote + 5, noteNames[noteNumber % 12]);
-    text.attr({
+    text = toneArt.append("text").attrAll({
+      x: 3,
+      y: noteNumber * totalNote + 5,
       stroke: "#fff"
     });
+    text.text(noteNames[noteNumber % 12]);
   }
   qNotes = maxTime / ticksPerQNote;
   beatNotes = Math.ceil(qNotes / 4 / (1 / beatNote));
@@ -131,10 +153,20 @@ draw = function(midi) {
     x = beat * ticksPerQNote / ticksPerPixel;
     height = 10;
     if (beat % bar === 0) {
-      timeArt.text(x + 5, 10, beat / bar + 1);
+      text = beatArt.append("text").attrAll({
+        x: x + 5,
+        y: 10
+      });
+      text.text(beat / bar);
       height = 20;
     }
-    timeArt.path("M" + x + ",30 L" + x + "," + (30 - height));
+    beatArt.append("line").attrAll({
+      x1: x,
+      y1: 30,
+      x2: x,
+      y2: 30 - height,
+      stroke: "#000"
+    });
   }
   return null;
 };

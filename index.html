@@ -1,16 +1,31 @@
 <head>
   <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript" charset="utf-8"></script>
   <script src="underscore.js" type="text/javascript" charset="utf-8"></script>
-  <script src="raphael.js" type="text/javascript" charset="utf-8"></script>
-  <script src="zpd.js" type="text/javascript" charset="utf-8"></script>
+  <script src="d3.js" type="text/javascript" charset="utf-8"></script>
   <script src="stream.js" type="text/javascript" charset="utf-8"></script>
   <script src="midifile.js" type="text/javascript" charset="utf-8"></script>
   <script src="diff.js" type="text/javascript" charset="utf-8"></script>
   <script src="draw.js" type="text/javascript" charset="utf-8"></script>
   <style type="text/css" media="screen">
     body {
+
+    }
+    svg {
+      font: 0.5em Helvetica;
     }
   </style>
-</head>
 <body>
+  <div id="top">
+  </div>
+  <div id="music">
+    <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="1700" height="1600">
+      <g id="music" >
+        <g id="beats" transform="translate(20,0)"></g>
+        <g id="notes" transform="translate(20,30)" ></g>
+      </g>
+      <g id="tones" transform="translate(0,30)" ></g>
+    </svg>
+  </div>
+  <div id="side">
+  </div>
 </body>
