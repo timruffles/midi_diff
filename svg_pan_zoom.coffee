@@ -42,7 +42,7 @@ class PanZoomSVG
     @yPanEls.forEach changeCoordinates(Y)
     @bothEls.forEach changeCoordinates(X,Y)
   xPan: (dX) ->
-    return if xPan + dX <= 0
+    return if xPan + dX >= 1000
     xPan += dX
     @xPanEls.forEach changeCoordinates(X)
     @bothEls.forEach changeCoordinates(X,Y)

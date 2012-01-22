@@ -57,7 +57,7 @@ PanZoomSVG = (function() {
     return this.bothEls.forEach(changeCoordinates(X, Y));
   };
   PanZoomSVG.prototype.xPan = function(dX) {
-    if (xPan + dX <= 0) {
+    if (xPan + dX >= 1000) {
       return;
     }
     xPan += dX;
