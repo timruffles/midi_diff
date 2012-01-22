@@ -1,4 +1,4 @@
-var addDurations, draw, getColor, getMidi;
+var addDurations, draw, getColor, getMidi, musicalParamters;
 addDurations = function(events) {
   var noteStatus;
   noteStatus = {};
@@ -26,29 +26,66 @@ getColor = function(note) {
     return "blue";
   }
 };
-draw = function(events, art) {
-  var bpm, noteHeight, noteMargin, ticksPerBeat, ticksPerPixel, time, totalNote, track, wrapper;
-  console.log("drawing", events);
-  ticksPerBeat = 480;
-  bpm = 120;
+musicalParamters = function(midi) {
+  var params;
+  params = {};
+  midi.tracks.forEach(function(track) {
+    return track.forEach(function(event) {
+      if (event.subtype === "timeSignature") {
+        if (params.timeSignature) {
+          throw "Opps, don't support changing t sig yet";
+        }
+        params.timeSignature = [event.numerator, event.denominator];
+      }
+      if (event.subtype === "setTempo") {
+        return params.tempo = event.microsecondsPerBeat;
+      }
+    });
+  });
+  return params;
+};
+draw = function(midi, art) {
+  var bar, beat, beatNote, beatNotes, height, maxTime, noteHeight, noteMargin, params, qNotes, ticksPerBeatNote, ticksPerPixel, ticksPerQNote, totalNote, x, _ref;
+  console.log("drawing", midi);
+  params = musicalParamters(midi);
+  ticksPerQNote = params.ticksPerBeat || 480;
+  _ref = params.timeSignature || [4, 4], beatNote = _ref[0], bar = _ref[1];
   noteHeight = 10;
   noteMargin = 5;
   totalNote = noteMargin + noteHeight;
-  ticksPerPixel = 480 / 100;
-  time = 0;
-  track = art.set();
-  track.push(wrapper = art.rect());
-  return events.forEach(function(event) {
-    var note;
-    time += event.deltaTime;
-    if (event.subtype === "noteOn") {
-      note = art.rect(time / ticksPerPixel, event.noteNumber * totalNote, event.duration / ticksPerPixel, noteHeight);
-      note.attr({
-        fill: getColor(event)
-      });
-      return track.push(note);
+  ticksPerPixel = 48;
+  maxTime = 0;
+  midi.tracks.forEach(function(track) {
+    var time;
+    time = 0;
+    addDurations(track);
+    track.forEach(function(event) {
+      var note;
+      time += event.deltaTime;
+      if (event.subtype === "noteOn") {
+        note = art.rect(time / ticksPerPixel, event.noteNumber * totalNote, event.duration / ticksPerPixel, noteHeight);
+        return note.attr({
+          fill: getColor(event)
+        });
+      }
+    });
+    if (time > maxTime) {
+      return maxTime = time;
     }
   });
+  qNotes = maxTime / ticksPerQNote;
+  beatNotes = Math.ceil(qNotes / 4 / (1 / beatNote));
+  ticksPerBeatNote = (1 / beatNote) * 4 * ticksPerQNote;
+  for (beat = 0; 0 <= beatNotes ? beat <= beatNotes : beat >= beatNotes; 0 <= beatNotes ? beat++ : beat--) {
+    x = beat * ticksPerQNote / ticksPerPixel;
+    height = 10;
+    if (beat % bar === 0) {
+      art.text(x + 5, 10, beat / bar + 1);
+      height = 20;
+    }
+    art.path("M" + x + ",30 L" + x + "," + (30 - height));
+  }
+  return null;
 };
 getMidi = function(file) {
   return $.ajax({
@@ -91,8 +128,6 @@ $(function() {
     var midiA, midiB;
     midiA = _arg[0], midiB = _arg[1];
     diff(midiA, midiB);
-    return midiA.tracks.forEach(function(track) {
-      return draw(addDurations(track), art);
-    });
+    return draw(midiA, art);
   });
 });

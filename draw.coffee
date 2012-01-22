@@ -15,23 +15,60 @@ getColor = (note) ->
     "red"
   else
     "blue"
-draw = (events,art) ->
-  console.log "drawing", events
-  ticksPerBeat = 480
-  bpm = 120
+
+
+musicalParamters = (midi) ->
+  params = {}
+  midi.tracks.forEach (track) ->
+    track.forEach (event) ->
+      if event.subtype == "timeSignature"
+        if params.timeSignature
+          throw "Opps, don't support changing t sig yet"
+        params.timeSignature = [event.numerator,event.denominator]
+      if event.subtype == "setTempo"
+        params.tempo = event.microsecondsPerBeat
+  params
+
+draw = (midi,art) ->
+
+  console.log "drawing", midi
+
+  params = musicalParamters midi
+
+  ticksPerQNote = params.ticksPerBeat || 480
+  [beatNote,bar] = params.timeSignature || [4,4]
+
   noteHeight = 10
   noteMargin = 5
   totalNote = noteMargin + noteHeight
-  ticksPerPixel = 480 / 100
-  time = 0
-  track = art.set()
-  track.push wrapper = art.rect()
-  events.forEach (event) ->
-    time += event.deltaTime
-    if event.subtype == "noteOn"
-      note = art.rect(time / ticksPerPixel,event.noteNumber * totalNote,event.duration / ticksPerPixel,noteHeight)
-      note.attr fill: getColor event
-      track.push note
+  ticksPerPixel = 48
+
+  maxTime = 0
+  midi.tracks.forEach (track) ->
+    time = 0
+
+    addDurations track
+
+    track.forEach (event) ->
+      time += event.deltaTime
+      if event.subtype == "noteOn"
+        note = art.rect(time / ticksPerPixel,event.noteNumber * totalNote,event.duration / ticksPerPixel,noteHeight)
+        note.attr fill: getColor event
+    if time > maxTime
+      maxTime = time
+
+  # default 4/4
+  qNotes = maxTime / ticksPerQNote
+  beatNotes = Math.ceil( qNotes / 4 / (1 / beatNote) )
+  ticksPerBeatNote = (1 / beatNote) * 4 * ticksPerQNote
+  for beat in [0..beatNotes]
+    x = beat * ticksPerQNote / ticksPerPixel
+    height = 10
+    if beat % bar == 0
+      art.text x + 5, 10, beat / bar + 1
+      height = 20
+    art.path "M#{x},30 L#{x},#{30 - height}"
+  null
 
 getMidi = (file) ->
   $.ajax
@@ -66,5 +103,4 @@ $ ->
 
     diff midiA, midiB
 
-    midiA.tracks.forEach (track) ->
-      draw addDurations(track), art
+    draw midiA, art
