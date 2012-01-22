@@ -17,29 +17,6 @@ getColor = (note) ->
     "blue"
 
 
-SVGElement::attr = (attrs,set) ->
-  if typeof attrs == "string"
-    if set
-      @setAttribute attrs, set
-    else
-      @getAttribute attrs
-  else
-    for own key, val of attrs
-      @attr key, val
-
-createEl = (el) ->
-  el = document.createElementNS('http://www.w3.org/2000/svg', el)
-
-svg =
-  rect: (x,y,w,h) =>
-    el = createEl "rect"
-    el.attr width: w, height: h, x: x, y: y
-    el
-  text: (x,y,text) ->
-    el = createEl "rect"
-    el.attr text: text, x: x, y: y
-    el
-
 musicalParamters = (midi) ->
   params = {}
   midi.tracks.forEach (track) ->
@@ -52,13 +29,27 @@ musicalParamters = (midi) ->
         params.tempo = event.microsecondsPerBeat
   params
 
+addGroup = (paper) ->
+  root = paper.canvas
+  group = document.createElementNS('http://www.w3.org/2000/svg', 'g')
+  root.appendChild group
+  paper.zoomPanGroup = group
+  ['circle', 'rect', 'ellipse', 'image', 'text', 'path'].forEach (method) ->
+    original = paper[method]
+    paper[method] = ->
+      el = original.apply(paper,arguments)
+      group.appendChild el.node
+      el
+
 noteNames = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"]
 
 draw = (midi) ->
 
   timeArt = Raphael(20,10,800,30)
   noteArt = Raphael(20,40,800,800)
+  addGroup noteArt
   toneArt = Raphael(0,40,20,800)
+  addGroup toneArt
 
   console.log "drawing", midi
 
@@ -73,12 +64,12 @@ draw = (midi) ->
   ticksPerPixel = 48
 
   octaveWeights = []
-  scrollToOctave = (octaveWeights,svg) ->
+  scrollToOctave = (octaveWeights,paper) ->
     maxAt = -Infinity
     max = -Infinity
     octaveWeights.forEach (w,index) -> max = index if w > maxAt
     dy = - 12 * noteHeight * max # set dY
-    svg.canvas.setAttribute("transform","matrix(0,0,0,0,0,#{dy})")
+    paper.zoomPanGroup.setAttribute("transform","matrix(1,0,0,1,0,#{dy})")
 
   maxTime = 0
   midi.tracks.forEach (track) ->
@@ -98,6 +89,7 @@ draw = (midi) ->
       maxTime = time
 
   scrollToOctave octaveWeights, noteArt
+  scrollToOctave octaveWeights, toneArt
 
   for noteNumber in [0..127]
     tone = toneArt.rect(0,noteNumber * totalNote,20,noteHeight)
