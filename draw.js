@@ -59,7 +59,7 @@ byId = function(id) {
   return document.getElementById(id);
 };
 draw = function(midi) {
-  var bar, beat, beatArt, beatNote, beatNotes, beatSVG, height, maxTime, noteArt, noteHeight, noteMargin, noteNumber, noteSVG, noteWrap, octaveWeights, params, qNotes, scrollToOctave, stroke, text, ticksPerBeatNote, ticksPerPixel, ticksPerQNote, tone, toneArt, toneSVG, totalNote, x, _ref;
+  var bar, beat, beatArt, beatNote, beatNotes, beatSVG, height, maxTime, noteArt, noteHeight, noteMargin, noteNumber, noteSVG, noteWrap, octaveWeights, panZoomControl, params, qNotes, scrollToOctave, stroke, text, ticksPerBeatNote, ticksPerPixel, ticksPerQNote, tone, toneArt, toneSVG, totalNote, x, _ref;
   noteSVG = byId("notes");
   toneSVG = byId("tones");
   beatSVG = byId("beats");
@@ -86,8 +86,7 @@ draw = function(midi) {
       }
     });
     dy = -12 * noteHeight * max;
-    noteArt.attr("transform", "translate(0," + dy + ")");
-    return toneArt.attr("transform", "translate(0," + dy + ")");
+    return panZoomControl.yPan(dy);
   };
   maxTime = 0;
   midi.tracks.forEach(function(track) {
@@ -114,8 +113,8 @@ draw = function(midi) {
       return maxTime = time;
     }
   });
+  panZoomControl = new PanZoomSVG(byId("music-view"), [beatSVG], [toneSVG], [noteSVG]);
   scrollToOctave();
-  new PanZoomSVG(byId("music-view"), noteSVG, beatSVG, toneSVG);
   for (noteNumber = 0; noteNumber <= 127; noteNumber++) {
     tone = toneArt.append("rect").attrAll({
       x: 0,

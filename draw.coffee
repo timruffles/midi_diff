@@ -68,8 +68,7 @@ draw = (midi) ->
     max = -Infinity
     octaveWeights.forEach (w,index) -> max = index if w > maxAt
     dy = - 12 * noteHeight * max # set dY
-    noteArt.attr("transform","translate(0,#{dy})")
-    toneArt.attr("transform","translate(0,#{dy})")
+    panZoomControl.yPan dy
 
   maxTime = 0
   midi.tracks.forEach (track) ->
@@ -92,8 +91,8 @@ draw = (midi) ->
     if time > maxTime
       maxTime = time
 
+  panZoomControl = new PanZoomSVG byId("music-view"), [beatSVG],[toneSVG],[noteSVG]
   scrollToOctave()
-  new PanZoomSVG byId("music-view"), noteSVG,beatSVG,toneSVG
 
   for noteNumber in [0..127]
     tone = toneArt.append("rect").attrAll

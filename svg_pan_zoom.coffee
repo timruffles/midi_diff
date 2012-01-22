@@ -1,19 +1,22 @@
-translateRe = /translate\(([\d\-]+),([\d-]+)\)/
-getTranslate = (el) ->
-  match = translateRe.exec(el.getAttribute "transform")
-  match?.slice(1).map((v) -> parseInt v) || [0,0]
 class PanZoomSVG
   
   X = 0
   Y = 1
 
-  constructor: (@el,@noteEl,@beatEl,@toneEl) ->
+  xPan = 0
+  yPan = 0
+
+  changeCoordinates = (coords...) ->
+    x = if coords.indexOf(X) == -1 then 0 else xPan
+    y = if coords.indexOf(Y) == -1 then 0 else yPan
+    console.log "changing to", x,y
+    (el) ->
+      el.setAttribute "transform", "translate(#{x},#{y})"
+
+  constructor: (@el,@xPanEls,@yPanEls,@bothEls) ->
     @el.addEventListener "mousedown", @startPan
     @el.addEventListener "mouseup", @stopPan
     @el.addEventListener "mouseout", @stopPan
-    @elPositions = {}
-    ["note","tone","beat"].forEach (key) =>
-      @elPositions[key] = getTranslate @[key + "El"]
   startPan: (evt) =>
     @el.addEventListener "mousemove", @mousePan
     @lastX = evt.clientX
@@ -34,23 +37,13 @@ class PanZoomSVG
     @lastX = x
     @lastY = y
   yPan: (dY) ->
-    ["note","tone"].forEach (key) =>
-      @changeCoordinate key, dY, Y
+    return if yPan + dY <= -1700
+    yPan += dY
+    @yPanEls.forEach changeCoordinates(Y)
+    @bothEls.forEach changeCoordinates(X,Y)
   xPan: (dX) ->
-    ["note","beat"].forEach (key) =>
-      @changeCoordinate key, dX, X
-  changeCoordinate: (key,delta,coord) ->
-    pos = @elPositions[key]
-    pos[coord] += delta
-    [x,y] = pos
-    @[key + "El"].setAttribute "transform", "translate(#{x},#{y})"
-  updateMatrix: (matrix) ->
-    @matrix || = [1,0,0,
-                  0,1,0]
-    for el, index in matrix
-      if el?
-        @matrix[index] = el
-    
-
-
+    return if xPan + dX <= 0
+    xPan += dX
+    @xPanEls.forEach changeCoordinates(X)
+    @bothEls.forEach changeCoordinates(X,Y)
 

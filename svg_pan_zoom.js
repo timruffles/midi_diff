@@ -1,32 +1,32 @@
-var PanZoomSVG, getTranslate, translateRe;
-var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
-translateRe = /translate\(([\d\-]+),([\d-]+)\)/;
-getTranslate = function(el) {
-  var match;
-  match = translateRe.exec(el.getAttribute("transform"));
-  return (match != null ? match.slice(1).map(function(v) {
-    return parseInt(v);
-  }) : void 0) || [0, 0];
-};
+var PanZoomSVG;
+var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __slice = Array.prototype.slice;
 PanZoomSVG = (function() {
-  var X, Y;
+  var X, Y, changeCoordinates, xPan, yPan;
   X = 0;
   Y = 1;
-  function PanZoomSVG(el, noteEl, beatEl, toneEl) {
+  xPan = 0;
+  yPan = 0;
+  changeCoordinates = function() {
+    var coords, x, y;
+    coords = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+    x = coords.indexOf(X) === -1 ? 0 : xPan;
+    y = coords.indexOf(Y) === -1 ? 0 : yPan;
+    console.log("changing to", x, y);
+    return function(el) {
+      return el.setAttribute("transform", "translate(" + x + "," + y + ")");
+    };
+  };
+  function PanZoomSVG(el, xPanEls, yPanEls, bothEls) {
     this.el = el;
-    this.noteEl = noteEl;
-    this.beatEl = beatEl;
-    this.toneEl = toneEl;
+    this.xPanEls = xPanEls;
+    this.yPanEls = yPanEls;
+    this.bothEls = bothEls;
     this.mousePan = __bind(this.mousePan, this);
     this.stopPan = __bind(this.stopPan, this);
     this.startPan = __bind(this.startPan, this);
     this.el.addEventListener("mousedown", this.startPan);
     this.el.addEventListener("mouseup", this.stopPan);
     this.el.addEventListener("mouseout", this.stopPan);
-    this.elPositions = {};
-    ["note", "tone", "beat"].forEach(__bind(function(key) {
-      return this.elPositions[key] = getTranslate(this[key + "El"]);
-    }, this));
   }
   PanZoomSVG.prototype.startPan = function(evt) {
     this.el.addEventListener("mousemove", this.mousePan);
@@ -49,31 +49,20 @@ PanZoomSVG = (function() {
     return this.lastY = y;
   };
   PanZoomSVG.prototype.yPan = function(dY) {
-    return ["note", "tone"].forEach(__bind(function(key) {
-      return this.changeCoordinate(key, dY, Y);
-    }, this));
+    if (yPan + dY <= -1700) {
+      return;
+    }
+    yPan += dY;
+    this.yPanEls.forEach(changeCoordinates(Y));
+    return this.bothEls.forEach(changeCoordinates(X, Y));
   };
   PanZoomSVG.prototype.xPan = function(dX) {
-    return ["note", "beat"].forEach(__bind(function(key) {
-      return this.changeCoordinate(key, dX, X);
-    }, this));
-  };
-  PanZoomSVG.prototype.changeCoordinate = function(key, delta, coord) {
-    var pos, x, y;
-    pos = this.elPositions[key];
-    pos[coord] += delta;
-    x = pos[0], y = pos[1];
-    return this[key + "El"].setAttribute("transform", "translate(" + x + "," + y + ")");
-  };
-  PanZoomSVG.prototype.updateMatrix = function(matrix) {
-    var el, index, _len, _results;
-    this.matrix || (this.matrix = [1, 0, 0, 0, 1, 0]);
-    _results = [];
-    for (index = 0, _len = matrix.length; index < _len; index++) {
-      el = matrix[index];
-      _results.push(el != null ? this.matrix[index] = el : void 0);
+    if (xPan + dX <= 0) {
+      return;
     }
-    return _results;
+    xPan += dX;
+    this.xPanEls.forEach(changeCoordinates(X));
+    return this.bothEls.forEach(changeCoordinates(X, Y));
   };
   return PanZoomSVG;
 })();
